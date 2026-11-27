@@ -106,6 +106,11 @@
     { slug: 'politics', name: 'Politics' },
     { slug: 'architecture', name: 'Architecture' },
     { slug: 'misc', name: 'Misc' },
+    { slug: 'social', name: 'Social' },
+    { slug: 'it', name: 'IT' },
+    { slug: 'work', name: 'Work' },
+    { slug: 'huh', name: 'Huh!' },
+    { slug: 'junk', name: 'Junk' },
     { slug: 'arts', name: 'Arts' }
   ];
 
@@ -275,6 +280,9 @@
             '<p class="eyebrow">Caricatures · ' + cat.name + count + '</p>');
           hub = hub.replace(new RegExp('<h3>' + cat.name + '</h3><small>[^<]*</small>'),
             '<h3>' + cat.name + '</h3><small>' + n + ' drawing' + (n > 1 ? 's' : '') + '</small>');
+          // a new theme's first drawing becomes its cover on the Caricatures page
+          hub = hub.replace('<span class="cover-empty">' + esc(cat.name) + '</span>',
+            '<img src="' + thumbOf(newItems[0].src) + '" alt="' + esc(cat.name) + ' caricatures" loading="lazy">');
         }
         if (page === d.page) throw new Error('Page de galerie non reconnue');
 

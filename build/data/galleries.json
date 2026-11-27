@@ -2540,5 +2540,40 @@
     "caption": "They say “democracy we are..” .. really ?"
    }
   ]
+ },
+ "social": {
+  "intro": [
+   "Caricatures · Social",
+   ""
+  ],
+  "items": []
+ },
+ "it": {
+  "intro": [
+   "Caricatures · IT",
+   ""
+  ],
+  "items": []
+ },
+ "work": {
+  "intro": [
+   "Caricatures · Work",
+   ""
+  ],
+  "items": []
+ },
+ "huh": {
+  "intro": [
+   "Caricatures · Huh!",
+   ""
+  ],
+  "items": []
+ },
+ "junk": {
+  "intro": [
+   "Caricatures · Junk",
+   ""
+  ],
+  "items": []
  }
 }

@@ -26,6 +26,12 @@ THEMES = [
     ("politics", "Politics", WP + "protesting-the-french-exception.jpg"),
     ("funny", "Funny", WP + "funny-caricature-01.jpg"),
     ("misc", "Misc", WP + "bye-bye-chrome.jpg"),
+    # New themes: no cover yet, the hub shows the latest drawing once there is one
+    ("social", "Social", None),
+    ("it", "IT", None),
+    ("work", "Work", None),
+    ("huh", "Huh!", None),
+    ("junk", "Junk", None),
 ]
 
 POLITICS = {
@@ -183,9 +189,19 @@ def main():
 </div>""", "arts", "Drawings, sketches and digital pieces by Karim Ben Khalifa.")
 
     # Caricatures hub
+    def cover(s, n, img):
+        items = g[s]["items"]
+        src = img or (items[0]["src"] if items else None)
+        if not src:
+            return f'<span class="cover-empty">{e(n)}</span>'
+        return f'<img src="{e(thumb(src) if src.startswith("/uploads/") else src + "?w=800")}" alt="{e(n)} caricatures" loading="lazy">'
+
+    def howmany(k):
+        return "Coming soon" if k == 0 else f'{k} drawing{"s" if k > 1 else ""}'
+
     cards = "".join(
-        f'<a class="theme" href="/caricatures/{s}/"><img src="{img}?w=800" alt="{n} caricatures" loading="lazy">'
-        f'<h3>{n}</h3><small>{len(g[s]["items"])} drawing{"s" if len(g[s]["items"]) > 1 else ""}</small></a>'
+        f'<a class="theme" href="/caricatures/{s}/">{cover(s, n, img)}'
+        f'<h3>{n}</h3><small>{howmany(len(g[s]["items"]))}</small></a>'
         for s, n, img in THEMES
     )
     page("caricatures", "Caricatures", f"""<div class="wrap">
@@ -200,6 +216,11 @@ def main():
         "politics": "Caricatures about politics and current events.",
         "funny": "The lighter side: everyday absurdities, tech fails and family chaos. Tap any drawing to open it full screen, then swipe or use the arrows.",
         "misc": "Everything else: caricatures that don't fit in one theme. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "social": "People, social media and the way we live together. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "it": "Computers, apps, updates and the rest of our digital troubles. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "work": "Bosses, meetings, deadlines and the office in general. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "huh": "The ones that leave you puzzled. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "junk": "Quick sketches, odd ideas and leftovers. Tap any drawing to open it full screen, then swipe or use the arrows.",
     }
     for s, n, _ in THEMES:
         items = g[s]["items"]
