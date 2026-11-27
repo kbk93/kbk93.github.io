@@ -2,8 +2,11 @@
 """Generates the whole static site from build/data/.
 
 Run from the repo root:  python3 build/build.py
-To add drawings: add entries at the TOP of the matching list in
-build/data/galleries.json (newest first), then rebuild.
+To add drawings: use the private page /admin/ on the live site (it uploads
+the image and updates galleries.json and the gallery pages in one commit),
+or add entries at the TOP of the matching list in build/data/galleries.json
+(newest first; for "arts" just after the first item, which is the hero image),
+then rebuild.
 """
 import json, os, html, datetime
 
@@ -109,10 +112,15 @@ def page(path, title, body, active="", description=""):
 
 
 def thumb(src):
+    # Images added from /admin/ live in the repo, with a ready-made square thumbnail
+    if src.startswith("/uploads/"):
+        return src.rsplit(".", 1)[0] + "-thumb.jpg"
     return src + "?w=480&h=480&crop=1"
 
 
 def big(src):
+    if src.startswith("/uploads/"):
+        return src
     return src + "?w=1600"
 
 
@@ -137,7 +145,7 @@ def more_themes(skip):
 
 def main():
     g = json.load(open(os.path.join(DATA, "galleries.json"), encoding="utf-8"))
-    g["politics"] = POLITICS
+    g.setdefault("politics", POLITICS)
     posts = json.load(open(os.path.join(DATA, "posts.json"), encoding="utf-8"))
 
     # Home

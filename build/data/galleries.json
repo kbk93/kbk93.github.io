@@ -2514,5 +2514,19 @@
     "caption": ""
    }
   ]
+ },
+ "politics": {
+  "intro": [
+   "Caricatures · Politics",
+   "Caricatures about politics and current events."
+  ],
+  "items": [
+   {
+    "src": "https://benkhalifas.wordpress.com/wp-content/uploads/2026/11/protesting-the-french-exception.jpg",
+    "alt": "Caricature: riot police charge protesters under a banner reading \"Protesting the French exception\" while two international observers watch through binoculars",
+    "title": "Protesting the French exception",
+    "caption": "They say “democracy we are..” .. really ?"
+   }
+  ]
  }
 }

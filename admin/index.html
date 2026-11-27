@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>Publier – Admin</title>
+<link rel="stylesheet" href="/assets/style.css">
+<style>
+  body { background: var(--bg); }
+  .admin { max-width: 560px; margin: 0 auto; padding: 24px 18px 80px; }
+  .admin h1 { font-size: 1.7rem; margin: 6px 0 4px; }
+  .admin .sub { color: var(--muted); margin: 0 0 22px; }
+  .box { background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 18px; margin-bottom: 16px; }
+  .admin label { display: block; font-weight: 500; margin: 0 0 6px; }
+  .admin input[type=text], .admin input[type=password], .admin textarea, .admin select {
+    width: 100%; box-sizing: border-box; font: inherit; padding: 11px 12px; border: 1px solid var(--line);
+    border-radius: 10px; background: #fff; margin-bottom: 14px; }
+  .admin textarea { min-height: 64px; resize: vertical; }
+  .cats { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 6px; }
+  .cats input { position: absolute; opacity: 0; pointer-events: none; }
+  .cats span { display: inline-block; padding: 9px 14px; border-radius: 999px; border: 1px solid var(--line); background: #fff; cursor: pointer; }
+  .cats input:checked + span { background: var(--green); border-color: var(--green); color: #fff; }
+  .pick { display: block; text-align: center; padding: 26px 12px; border: 2px dashed var(--line); border-radius: var(--radius); cursor: pointer; color: var(--muted); background: #fff; }
+  .pick strong { color: var(--green); display: block; font-size: 1.1rem; margin-bottom: 4px; }
+  .pick input { display: none; }
+  .item { display: grid; grid-template-columns: 92px 1fr; gap: 12px; align-items: start; border-top: 1px solid var(--line); padding-top: 14px; margin-top: 14px; }
+  .item img { width: 92px; height: 92px; object-fit: cover; border-radius: 10px; background: #ece9e1; }
+  .item input, .item textarea { margin-bottom: 8px !important; }
+  .item .rm { background: none; border: 0; color: #b3261e; font: inherit; padding: 0; cursor: pointer; }
+  .admin .btn { width: 100%; justify-content: center; font-size: 1.05rem; padding: 14px; border: 0; cursor: pointer; }
+  .admin .btn[disabled] { opacity: .5; cursor: default; }
+  .msg { padding: 12px 14px; border-radius: 10px; margin: 0 0 16px; }
+  .msg.ok { background: #e6f2ea; color: var(--green-dark); }
+  .msg.err { background: #fbe9e7; color: #8c1d18; }
+  .msg.info { background: #fff6dc; color: #6b5100; }
+  .link { background: none; border: 0; color: var(--muted); text-decoration: underline; font: inherit; cursor: pointer; padding: 0; }
+  .small { font-size: .9rem; color: var(--muted); }
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+<div class="admin">
+  <p class="eyebrow">Ben Khalifa's · Admin</p>
+
+  <!-- First time on this phone: GitHub key + choose a password -->
+  <section id="setup" class="hidden">
+    <h1>Première connexion</h1>
+    <p class="sub">À faire une seule fois sur ce téléphone.</p>
+    <div id="setupMsg"></div>
+    <div class="box">
+      <label for="token">Clé GitHub</label>
+      <input type="password" id="token" autocomplete="off" placeholder="github_pat_…">
+      <label for="newPass">Choisis ton mot de passe</label>
+      <input type="password" id="newPass" autocomplete="new-password">
+      <label for="newPass2">Répète le mot de passe</label>
+      <input type="password" id="newPass2" autocomplete="new-password">
+      <button class="btn" id="setupBtn">Enregistrer</button>
+    </div>
+    <p class="small">La clé reste sur ce téléphone, chiffrée avec ton mot de passe. Personne d'autre ne peut publier sans elle.</p>
+  </section>
+
+  <!-- Next times: just the password -->
+  <section id="login" class="hidden">
+    <h1>Connexion</h1>
+    <p class="sub">Entre ton mot de passe pour publier.</p>
+    <div id="loginMsg"></div>
+    <div class="box">
+      <label for="pass">Mot de passe</label>
+      <input type="password" id="pass" autocomplete="current-password">
+      <button class="btn" id="loginBtn">Entrer</button>
+    </div>
+    <button class="link" id="resetBtn">Mot de passe oublié ? Recommencer avec une nouvelle clé</button>
+  </section>
+
+  <!-- Publishing -->
+  <section id="publish" class="hidden">
+    <h1>Publier</h1>
+    <p class="sub">Choisis la catégorie, ajoute tes images, publie.</p>
+    <div id="pubMsg"></div>
+    <div class="box">
+      <label>Catégorie</label>
+      <div class="cats" id="cats"></div>
+    </div>
+    <div class="box">
+      <label class="pick"><strong>+ Ajouter des images</strong>une ou plusieurs à la fois
+        <input type="file" id="files" accept="image/*" multiple></label>
+      <div id="list"></div>
+    </div>
+    <button class="btn" id="pubBtn" disabled>Publier</button>
+    <p class="small" style="margin-top:14px">Le site se met à jour en 1 à 2 minutes après la publication.</p>
+    <p><button class="link" id="logoutBtn">Se déconnecter</button></p>
+  </section>
+</div>
+
+<script>
+(function () {
+  var OWNER = 'kbk93', REPO = 'kbk93.github.io', BRANCH = 'main';
+  var API = 'https://api.github.com/repos/' + OWNER + '/' + REPO;
+  var STORE = 'kbk-admin-key';
+  var AUTHOR = 'Karim Ben Khalifa';
+
+  // slug, menu name, folder of the page, kind
+  var CATS = [
+    { slug: 'funny', name: 'Funny' },
+    { slug: 'politics', name: 'Politics' },
+    { slug: 'architecture', name: 'Architecture' },
+    { slug: 'misc', name: 'Misc' },
+    { slug: 'arts', name: 'Arts' }
+  ];
+
+  var token = null;
+  var items = [];   // {file, preview, title, caption}
+
+  function $(id) { return document.getElementById(id); }
+  function show(id) { ['setup', 'login', 'publish'].forEach(function (s) { $(s).classList.toggle('hidden', s !== id); }); }
+  function msg(id, kind, text) { $(id).innerHTML = text ? '<p class="msg ' + kind + '"></p>' : ''; if (text) $(id).firstChild.textContent = text; }
+
+  function store() { try { return JSON.parse(localStorage.getItem(STORE) || 'null'); } catch (e) { return null; } }
+  function save(v) { try { localStorage.setItem(STORE, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function forget() { try { localStorage.removeItem(STORE); } catch (e) {} }
+
+  // ---------- encryption of the GitHub key with the password ----------
+  var enc = new TextEncoder(), dec = new TextDecoder();
+  function b64(buf) { var s = '', b = new Uint8Array(buf); for (var i = 0; i < b.length; i++) s += String.fromCharCode(b[i]); return btoa(s); }
+  function unb64(s) { var bin = atob(s), b = new Uint8Array(bin.length); for (var i = 0; i < bin.length; i++) b[i] = bin.charCodeAt(i); return b; }
+  function deriveKey(pass, salt) {
+    return crypto.subtle.importKey('raw', enc.encode(pass), 'PBKDF2', false, ['deriveKey']).then(function (k) {
+      return crypto.subtle.deriveKey({ name: 'PBKDF2', salt: salt, iterations: 250000, hash: 'SHA-256' }, k,
+        { name: 'AES-GCM', length: 256 }, false, ['encrypt', 'decrypt']);
+    });
+  }
+  function lock(tok, pass) {
+    var salt = crypto.getRandomValues(new Uint8Array(16)), iv = crypto.getRandomValues(new Uint8Array(12));
+    return deriveKey(pass, salt).then(function (k) {
+      return crypto.subtle.encrypt({ name: 'AES-GCM', iv: iv }, k, enc.encode(tok));
+    }).then(function (ct) { return { salt: b64(salt), iv: b64(iv), ct: b64(ct) }; });
+  }
+  function unlock(data, pass) {
+    return deriveKey(pass, unb64(data.salt)).then(function (k) {
+      return crypto.subtle.decrypt({ name: 'AES-GCM', iv: unb64(data.iv) }, k, unb64(data.ct));
+    }).then(function (pt) { return dec.decode(pt); });
+  }
+
+  // ---------- GitHub API ----------
+  function gh(path, opts) {
+    opts = opts || {};
+    return fetch(path.indexOf('http') === 0 ? path : API + path, {
+      method: opts.method || 'GET',
+      headers: { 'Authorization': 'Bearer ' + token, 'Accept': 'application/vnd.github+json', 'X-GitHub-Api-Version': '2022-11-28' },
+      body: opts.body ? JSON.stringify(opts.body) : undefined,
+      cache: 'no-store'
+    }).then(function (r) {
+      if (!r.ok) return r.text().then(function (t) { var e = new Error('GitHub ' + r.status + ' ' + t.slice(0, 200)); e.status = r.status; throw e; });
+      return r.status === 204 ? null : r.json();
+    });
+  }
+  function checkToken(tok) {
+    token = tok;
+    return gh('').then(function (repo) {
+      if (!repo.permissions || !repo.permissions.push) throw new Error('nopush');
+      return true;
+    });
+  }
+  function readText(path, ref) {
+    return gh('/contents/' + path + '?ref=' + ref).then(function (f) {
+      return dec.decode(unb64(f.content.replace(/\n/g, '')));
+    });
+  }
+
+  // ---------- same escaping and markup as build/build.py ----------
+  function esc(s) {
+    return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+      .replace(/"/g, '&quot;').replace(/'/g, '&#x27;');
+  }
+  function thumbOf(src) { return src.replace(/\.[^.]+$/, '') + '-thumb.jpg'; }
+  function cell(it) {
+    var alt = it.alt || it.title || 'Drawing by Karim Ben Khalifa';
+    return '<a href="' + esc(it.src) + '" data-caption="' + esc(it.caption || '') + '">' +
+      '<img src="' + esc(thumbOf(it.src)) + '" alt="' + esc(alt) + '" loading="lazy" width="240" height="240"></a>';
+  }
+
+  // ---------- images: resize on the phone before sending ----------
+  function loadBitmap(file) {
+    if (window.createImageBitmap) {
+      return createImageBitmap(file, { imageOrientation: 'from-image' }).catch(function () { return loadImg(file); });
+    }
+    return loadImg(file);
+  }
+  function loadImg(file) {
+    return new Promise(function (res, rej) {
+      var im = new Image(); im.onload = function () { res(im); }; im.onerror = function () { rej(new Error('image')); };
+      im.src = URL.createObjectURL(file);
+    });
+  }
+  function toJpeg(src, w, h, sx, sy, sw, sh, q) {
+    var c = document.createElement('canvas'); c.width = w; c.height = h;
+    var x = c.getContext('2d'); x.fillStyle = '#fff'; x.fillRect(0, 0, w, h);
+    x.imageSmoothingQuality = 'high';
+    x.drawImage(src, sx, sy, sw, sh, 0, 0, w, h);
+    return new Promise(function (res) { c.toBlob(res, 'image/jpeg', q); });
+  }
+  function blobB64(blob) {
+    return new Promise(function (res) { var r = new FileReader(); r.onload = function () { res(r.result.split(',')[1]); }; r.readAsDataURL(blob); });
+  }
+  function prepare(file) {
+    return loadBitmap(file).then(function (bm) {
+      var W = bm.width, H = bm.height, max = 1600, s = Math.min(1, max / Math.max(W, H));
+      var side = Math.min(W, H);
+      return Promise.all([
+        toJpeg(bm, Math.round(W * s), Math.round(H * s), 0, 0, W, H, 0.85),
+        toJpeg(bm, 480, 480, (W - side) / 2, (H - side) / 2, side, side, 0.8)
+      ]);
+    }).then(function (blobs) { return Promise.all([blobB64(blobs[0]), blobB64(blobs[1])]); });
+  }
+
+  function slugify(s) {
+    return (s || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40);
+  }
+  function pad(n) { return (n < 10 ? '0' : '') + n; }
+
+  // ---------- the commit ----------
+  function publish(cat, list, status) {
+    var now = new Date();
+    var folder = 'uploads/' + now.getFullYear() + '/' + pad(now.getMonth() + 1) + '/';
+    var stamp = '' + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes()) + pad(now.getSeconds());
+    var newItems = [], files = [];
+
+    var chain = Promise.resolve();
+    list.forEach(function (it, i) {
+      chain = chain.then(function () {
+        status('Préparation de l’image ' + (i + 1) + ' / ' + list.length + '…');
+        return prepare(it.file).then(function (b) {
+          var base = folder + cat.slug + '-' + stamp + '-' + (i + 1) + (slugify(it.title) ? '-' + slugify(it.title) : '');
+          files.push({ path: base + '.jpg', b64: b[0] }, { path: base + '-thumb.jpg', b64: b[1] });
+          var title = it.title.trim(), caption = it.caption.trim();
+          var who = cat.slug === 'arts' ? 'Artwork by ' + AUTHOR : 'Caricature by ' + AUTHOR;
+          newItems.push({ src: '/' + base + '.jpg', alt: title ? who + ': ' + title : who, title: title, caption: caption });
+        });
+      });
+    });
+
+    function attempt(tries) {
+      var head, baseTree;
+      status('Envoi vers le site…');
+      return gh('/git/ref/heads/' + BRANCH).then(function (ref) {
+        head = ref.object.sha;
+        return gh('/git/commits/' + head);
+      }).then(function (c) {
+        baseTree = c.tree.sha;
+        var pagePath = cat.slug === 'arts' ? 'arts/index.html' : 'caricatures/' + cat.slug + '/index.html';
+        return Promise.all([readText('build/data/galleries.json', head), readText(pagePath, head),
+          cat.slug === 'arts' ? Promise.resolve(null) : readText('caricatures/index.html', head)
+        ]).then(function (t) { return { json: t[0], page: t[1], hub: t[2], pagePath: pagePath }; });
+      }).then(function (d) {
+        var g = JSON.parse(d.json);
+        var gal = g[cat.slug];
+        if (!gal) throw new Error('Catégorie introuvable dans galleries.json');
+        // newest first; in Arts the first item is the hero image, so new pieces go just after it
+        var at = cat.slug === 'arts' ? 1 : 0;
+        Array.prototype.splice.apply(gal.items, [at, 0].concat(newItems));
+        var json = JSON.stringify(g, null, 1);
+
+        var cells = newItems.map(cell).join('');
+        var page = d.page.replace('<div class="grid">', '<div class="grid">' + cells);
+        var hub = d.hub;
+        if (cat.slug === 'arts') {
+          var pieces = gal.items.length - 1;
+          page = page.replace(/<p class="eyebrow">Arts · \d+ pieces<\/p>/, '<p class="eyebrow">Arts · ' + pieces + ' pieces</p>');
+        } else {
+          var n = gal.items.length;
+          var count = n > 1 ? ' · ' + n + ' drawings' : '';
+          page = page.replace(new RegExp('<p class="eyebrow">Caricatures · ' + cat.name + '[^<]*</p>'),
+            '<p class="eyebrow">Caricatures · ' + cat.name + count + '</p>');
+          hub = hub.replace(new RegExp('<h3>' + cat.name + '</h3><small>[^<]*</small>'),
+            '<h3>' + cat.name + '</h3><small>' + n + ' drawing' + (n > 1 ? 's' : '') + '</small>');
+        }
+        if (page === d.page) throw new Error('Page de galerie non reconnue');
+
+        var blobs = files.map(function (f) {
+          return gh('/git/blobs', { method: 'POST', body: { content: f.b64, encoding: 'base64' } })
+            .then(function (b) { return { path: f.path, mode: '100644', type: 'blob', sha: b.sha }; });
+        });
+        var tree = blobs.concat([
+          Promise.resolve({ path: 'build/data/galleries.json', mode: '100644', type: 'blob', content: json }),
+          Promise.resolve({ path: d.pagePath, mode: '100644', type: 'blob', content: page })
+        ]);
+        if (hub) tree.push(Promise.resolve({ path: 'caricatures/index.html', mode: '100644', type: 'blob', content: hub }));
+        return Promise.all(tree);
+      }).then(function (entries) {
+        return gh('/git/trees', { method: 'POST', body: { base_tree: baseTree, tree: entries } });
+      }).then(function (t) {
+        var what = newItems.length > 1 ? newItems.length + ' images' : (newItems[0].title || 'image');
+        return gh('/git/commits', { method: 'POST', body: { message: 'Admin: ' + cat.name + ' – ' + what, tree: t.sha, parents: [head] } });
+      }).then(function (c) {
+        return gh('/git/refs/heads/' + BRANCH, { method: 'PATCH', body: { sha: c.sha, force: false } });
+      }).catch(function (e) {
+        // someone else changed the site at the same moment: start again from the new version
+        if (e.status === 422 && tries > 0) return attempt(tries - 1);
+        throw e;
+      });
+    }
+    return chain.then(function () { return attempt(2); });
+  }
+
+  // ---------- UI ----------
+  function renderCats() {
+    $('cats').innerHTML = CATS.map(function (c, i) {
+      return '<label><input type="radio" name="cat" value="' + c.slug + '"' + (i === 0 ? ' checked' : '') + '><span>' + c.name + '</span></label>';
+    }).join('');
+    try { var last = localStorage.getItem('kbk-admin-cat'); if (last) { var r = document.querySelector('input[name=cat][value="' + last + '"]'); if (r) r.checked = true; } } catch (e) {}
+  }
+  function renderList() {
+    var box = $('list'); box.innerHTML = '';
+    items.forEach(function (it, i) {
+      var row = document.createElement('div'); row.className = 'item';
+      row.innerHTML = '<img alt=""><div><input type="text" placeholder="Titre (facultatif)"><textarea placeholder="Légende (facultatif)"></textarea><button class="rm" type="button">Retirer</button></div>';
+      row.querySelector('img').src = it.preview;
+      var t = row.querySelector('input'), c = row.querySelector('textarea');
+      t.value = it.title; c.value = it.caption;
+      t.addEventListener('input', function () { it.title = t.value; });
+      c.addEventListener('input', function () { it.caption = c.value; });
+      row.querySelector('.rm').addEventListener('click', function () { URL.revokeObjectURL(it.preview); items.splice(i, 1); renderList(); });
+      box.appendChild(row);
+    });
+    $('pubBtn').disabled = !items.length;
+    $('pubBtn').textContent = items.length > 1 ? 'Publier les ' + items.length + ' images' : 'Publier';
+  }
+
+  $('files').addEventListener('change', function (e) {
+    Array.prototype.forEach.call(e.target.files, function (f) {
+      items.push({ file: f, preview: URL.createObjectURL(f), title: '', caption: '' });
+    });
+    e.target.value = '';
+    msg('pubMsg');
+    renderList();
+  });
+
+  $('pubBtn').addEventListener('click', function () {
+    var slug = document.querySelector('input[name=cat]:checked').value;
+    var cat = CATS.filter(function (c) { return c.slug === slug; })[0];
+    try { localStorage.setItem('kbk-admin-cat', slug); } catch (e) {}
+    var btn = $('pubBtn'); btn.disabled = true;
+    publish(cat, items.slice(), function (t) { msg('pubMsg', 'info', t); }).then(function () {
+      var n = items.length;
+      items.forEach(function (it) { URL.revokeObjectURL(it.preview); });
+      items = []; renderList();
+      msg('pubMsg', 'ok', (n > 1 ? n + ' images publiées' : 'Image publiée') + ' dans ' + cat.name + '. Visible sur le site d’ici 1 à 2 minutes.');
+    }).catch(function (e) {
+      btn.disabled = false;
+      var t = e.status === 401 ? 'La clé GitHub n’est plus valide (expirée ?). Déconnecte-toi et recommence avec une nouvelle clé.'
+        : 'La publication a échoué, rien n’a été modifié. Réessaie. (' + e.message + ')';
+      msg('pubMsg', 'err', t);
+    });
+  });
+
+  $('setupBtn').addEventListener('click', function () {
+    var tok = $('token').value.trim(), p1 = $('newPass').value, p2 = $('newPass2').value;
+    if (!tok) return msg('setupMsg', 'err', 'Colle ta clé GitHub.');
+    if (p1.length < 6) return msg('setupMsg', 'err', 'Le mot de passe doit faire au moins 6 caractères.');
+    if (p1 !== p2) return msg('setupMsg', 'err', 'Les deux mots de passe ne sont pas pareils.');
+    msg('setupMsg', 'info', 'Vérification de la clé…');
+    checkToken(tok).then(function () { return lock(tok, p1); }).then(function (data) {
+      if (!save(data)) throw new Error('storage');
+      $('token').value = $('newPass').value = $('newPass2').value = '';
+      msg('setupMsg'); enter();
+    }).catch(function (e) {
+      token = null;
+      msg('setupMsg', 'err', e.message === 'nopush' ? 'Cette clé ne peut pas modifier le site. Vérifie qu’elle a bien le droit « Contents : Read and write » sur kbk93.github.io.'
+        : e.message === 'storage' ? 'Ce navigateur bloque l’enregistrement (mode privé ?). Ouvre la page dans Chrome normal.'
+        : 'Clé refusée par GitHub. Vérifie que tu l’as copiée en entier.');
+    });
+  });
+
+  $('loginBtn').addEventListener('click', doLogin);
+  $('pass').addEventListener('keydown', function (e) { if (e.key === 'Enter') doLogin(); });
+  function doLogin() {
+    var data = store(); if (!data) return show('setup');
+    msg('loginMsg', 'info', 'Ouverture…');
+    unlock(data, $('pass').value).then(function (tok) {
+      token = tok; $('pass').value = ''; msg('loginMsg'); enter();
+    }).catch(function () { msg('loginMsg', 'err', 'Mot de passe incorrect.'); });
+  }
+  $('resetBtn').addEventListener('click', function () { forget(); token = null; show('setup'); });
+  $('logoutBtn').addEventListener('click', function () { token = null; show(store() ? 'login' : 'setup'); });
+
+  function enter() { renderCats(); renderList(); show('publish'); }
+
+  if (!window.crypto || !crypto.subtle) {
+    document.querySelector('.admin').insertAdjacentHTML('beforeend', '<p class="msg err">Ouvre cette page avec l’adresse en https.</p>');
+  } else {
+    show(store() ? 'login' : 'setup');
+  }
+})();
+</script>
+</body>
+</html>
