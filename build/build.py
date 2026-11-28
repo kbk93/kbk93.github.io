@@ -44,6 +44,18 @@ POLITICS = {
     }],
 }
 
+# Articles: "blog" goes to /blog/, "deen" to the page و الحمد لله (/alhamdulillah/).
+# Same list (posts.json, newest first), told apart by "section". /admin/ writes
+# the same markup as below, so keep the two in step when changing it.
+DEEN_NAME = "و الحمد لله"
+DEEN_FRAME = "/uploads/deen/frame.jpg"
+SECTIONS = {
+    "blog": {"path": "blog", "label": "Blog", "default_image": ""},
+    "deen": {"path": "alhamdulillah", "label": f'<span lang="ar">{DEEN_NAME}</span>', "default_image": DEEN_FRAME},
+}
+MONTHS = ["January", "February", "March", "April", "May", "June", "July",
+          "August", "September", "October", "November", "December"]
+
 e = html.escape
 
 
@@ -58,6 +70,7 @@ def nav(active):
 <li><a href="/arts/"{cur(active, "arts")}>Arts</a></li>
 <li class="has-sub"><a href="/caricatures/"{cur(active, "caricatures")}>Caricatures</a><ul>{sub}</ul></li>
 <li><a href="/blog/"{cur(active, "blog")}>Blog</a></li>
+<li><a href="/alhamdulillah/"{cur(active, "deen")} lang="ar">{DEEN_NAME}</a></li>
 <li><a href="/web-design/"{cur(active, "web-design")}>Web Design</a></li>
 <li><a href="/about/"{cur(active, "about")}>About</a></li>
 <li><a href="/contact/"{cur(active, "contact")}>Contact</a></li>
@@ -71,6 +84,13 @@ def cur(active, key):
 
 
 def page(path, title, body, active="", description=""):
+    out = os.path.join(ROOT, path, "index.html")
+    os.makedirs(os.path.dirname(out), exist_ok=True)
+    with open(out, "w", encoding="utf-8") as f:
+        f.write(render(title, body, active, description))
+
+
+def render(title, body, active="", description=""):
     full_title = f"{title} – {SITE}" if title else f"{SITE} – {TAGLINE}"
     desc = description or "Karim Ben Khalifa's drawings, caricatures and blog, and the websites Mehdi Ben Khalifa builds."
     year = datetime.date.today().year
@@ -87,7 +107,7 @@ def page(path, title, body, active="", description=""):
 <link rel="icon" href="{LOGO}?w=64">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Labrada:wght@500;600&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&family=Labrada:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="/assets/style.css">
 </head>
 <body>
@@ -111,10 +131,7 @@ def page(path, title, body, active="", description=""):
 </body>
 </html>
 """
-    out = os.path.join(ROOT, path, "index.html")
-    os.makedirs(os.path.dirname(out), exist_ok=True)
-    with open(out, "w", encoding="utf-8") as f:
-        f.write(doc)
+    return doc
 
 
 def thumb(src):
@@ -149,6 +166,45 @@ def more_themes(skip):
     return f'<div class="more"><p class="eyebrow">More caricatures</p><div class="btns">{btns}</div></div>'
 
 
+def fdate(iso):
+    d = datetime.date.fromisoformat(iso)
+    return f"{MONTHS[d.month - 1]} {d.day}, {d.year}"
+
+
+def post_thumb(p):
+    src = p.get("image") or SECTIONS[p.get("section", "blog")]["default_image"]
+    if not src:
+        return ""
+    return thumb(src) if src.startswith("/uploads/") else src + "?w=400&h=400&crop=1"
+
+
+def list_item(p):
+    sec = SECTIONS[p.get("section", "blog")]
+    url = f'/{sec["path"]}/{p["slug"]}/'
+    t = post_thumb(p)
+    imgtag = f'<a href="{url}"><img src="{e(t)}" alt="" loading="lazy"></a>' if t else ""
+    exc = f'<p dir="auto">{e(p["excerpt"])}</p>' if p.get("excerpt") else ""
+    return (f'<div class="post-item{"" if t else " noimg"}">{imgtag}<div>'
+            f'<h2 dir="auto"><a href="{url}">{e(p["title"])}</a></h2>'
+            f'<span class="date">{fdate(p["date"])}</span>{exc}</div></div>')
+
+
+def article(section, title, date, body, desc):
+    """Full page of one article. Called with @@…@@ placeholders, it also gives
+    /admin/ its template (build/data/shell.json)."""
+    sec = SECTIONS[section]
+    band = '<div class="deen-band" aria-hidden="true"></div>\n' if section == "deen" else ""
+    return render(title, f"""<div class="wrap narrow{" deen" if section == "deen" else ""}">
+{band}<article>
+<p class="eyebrow"><a href="/{sec["path"]}/">{sec["label"]}</a></p>
+<h1 dir="auto">{e(title)}</h1>
+<span class="date">{date} · Karim Ben Khalifa</span>
+{body}
+</article>
+<div class="more"><a class="btn outline" href="/{sec["path"]}/">← All articles</a></div>
+</div>""", section, desc)
+
+
 def main():
     g = json.load(open(os.path.join(DATA, "galleries.json"), encoding="utf-8"))
     g.setdefault("politics", POLITICS)
@@ -169,6 +225,8 @@ def main():
 <div class="btns"><a class="btn" href="/arts/">See the arts</a><a class="btn outline" href="/caricatures/">Caricatures</a></div></div>
 <div class="card"><h3>Blog</h3><p>Karim writes about whatever is on his mind. No single topic.</p>
 <div class="btns"><a class="btn" href="/blog/">Read the blog</a></div></div>
+<div class="card"><h3 lang="ar">{DEEN_NAME}</h3><p>Writing about our deen, as a thank-you to Allah for His mercy.</p>
+<div class="btns"><a class="btn" href="/alhamdulillah/">Read</a></div></div>
 <div class="card"><h3>Websites</h3><p>Mehdi builds websites from scratch.</p>
 <div class="btns"><a class="btn" href="/web-design/">Web design</a></div></div>
 </div>
@@ -233,31 +291,40 @@ def main():
 {more_themes(s)}
 </div>""", "caricatures/" + s, f"{n} caricatures by Karim Ben Khalifa.")
 
-    # Blog
-    items = []
+    # Articles (Blog and و الحمد لله)
+    lists = {k: [] for k in SECTIONS}
     for p in posts:
-        d = datetime.date.fromisoformat(p["date"]).strftime("%B %-d, %Y")
-        imgtag = f'<a href="/blog/{p["slug"]}/"><img src="{p["image"]}?w=400&h=400&crop=1" alt="" loading="lazy"></a>' if p["image"] else ""
-        exc = f'<p>{e(p["excerpt"])}</p>' if p["excerpt"] else ""
-        items.append(f'<div class="post-item{"" if p["image"] else " noimg"}">{imgtag}<div>'
-                     f'<h2><a href="/blog/{p["slug"]}/">{e(p["title"])}</a></h2>'
-                     f'<span class="date">{d}</span>{exc}</div></div>')
+        sec = p.setdefault("section", "blog")
+        lists[sec].append(list_item(p))
         body = open(os.path.join(DATA, "posts", p["slug"] + ".html"), encoding="utf-8").read()
-        page(f"blog/{p['slug']}", p["title"], f"""<div class="wrap narrow">
-<article>
-<p class="eyebrow"><a href="/blog/">Blog</a></p>
-<h1>{e(p["title"])}</h1>
-<span class="date">{d} · Karim Ben Khalifa</span>
-{body}
-</article>
-<div class="more"><a class="btn outline" href="/blog/">← All posts</a></div>
-</div>""", "blog", p["excerpt"] or p["title"])
+        out = os.path.join(ROOT, SECTIONS[sec]["path"], p["slug"], "index.html")
+        os.makedirs(os.path.dirname(out), exist_ok=True)
+        with open(out, "w", encoding="utf-8") as f:
+            f.write(article(sec, p["title"], fdate(p["date"]), body, p.get("excerpt") or p["title"]))
     page("blog", "Blog", f"""<div class="wrap narrow">
 <p class="eyebrow">Blog</p>
 <h1>Blog</h1>
 <p class="lead">Karim writes about whatever is on his mind. No single topic.</p>
-<div class="post-list">{"".join(items)}</div>
+<div class="post-list">{"".join(lists["blog"])}</div>
 </div>""", "blog")
+
+    page("alhamdulillah", DEEN_NAME, f"""<div class="wrap narrow deen">
+<section class="deen-frame">
+<div class="inner">
+<p class="bismillah" lang="ar" dir="rtl">بسم الله الرحمن الرحيم</p>
+<h1 class="deen-title" lang="ar" dir="rtl">{DEEN_NAME}</h1>
+<p class="lead">A page for our deen, and a small thank-you to Allah for His mercy and for making us His servants. Alhamdulillah.</p>
+</div>
+</section>
+<p>I write here about faith as I live it: what I read, what I learn, and the reminders I need first of all for myself. I'm not a scholar. What is right comes from Allah, and the mistakes are mine. Allah knows best.</p>
+<div class="post-list">{"".join(lists["deen"])}</div>
+</div>""", "deen", "Writing about our deen by Karim Ben Khalifa, as a tribute to Allah's mercy.")
+
+    # Templates for /admin/, which writes new articles without running this script
+    P = "@@"
+    shell = {k: article(k, P + "TITLE" + P, P + "DATE" + P, P + "BODY" + P, P + "DESC" + P) for k in SECTIONS}
+    with open(os.path.join(DATA, "shell.json"), "w", encoding="utf-8") as f:
+        json.dump(shell, f, ensure_ascii=False, indent=1)
 
     # Web design
     page("web-design", "Web Design", """<div class="wrap narrow">

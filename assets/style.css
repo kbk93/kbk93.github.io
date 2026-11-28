@@ -194,3 +194,22 @@ form.contact button { justify-self: start; cursor: pointer; }
 .site-footer { border-top: 1px solid var(--line); padding: 32px 0; color: var(--muted); font-size: .9rem; }
 .site-footer .wrap { display: flex; flex-wrap: wrap; gap: 12px; justify-content: space-between; }
 .site-footer a { color: var(--muted); }
+
+/* Articles: quotes and lists written from /admin/ */
+article blockquote { margin: 1.6em 0; padding: 14px 20px; border-inline-start: 4px solid var(--green); background: #f4f2ec; border-start-end-radius: 10px; border-end-end-radius: 10px; font-family: var(--serif); font-size: 1.1rem; }
+article blockquote p { margin: 0; }
+[lang="ar"] { font-family: "Amiri", "Noto Naskh Arabic", serif; }
+
+/* و الحمد لله */
+.deen { --deen-red: #d54355; --deen-green: #1b5751; --deen-cream: #fbf3e8; }
+.deen-frame { background: var(--deen-red) url(/uploads/deen/frame.jpg) center / cover; border-radius: 18px; padding: clamp(18px, 5vw, 40px); margin-bottom: 36px; }
+.deen-frame .inner { background: var(--deen-cream); border-radius: 12px; padding: clamp(28px, 6vw, 52px) clamp(18px, 4vw, 36px); text-align: center; box-shadow: 0 6px 24px rgba(0,0,0,.12); }
+.bismillah { font-size: 1.35rem; color: var(--deen-green); margin: 0 0 .2em; }
+.deen-title { font-size: clamp(2.8rem, 9vw, 4.4rem); font-weight: 700; color: var(--deen-green); line-height: 1.35; margin: 0 0 .25em; }
+.deen-frame .lead { margin: 0 auto; max-width: 30em; }
+.deen-band { height: 56px; border-radius: 12px; background: var(--deen-red) url(/uploads/deen/frame.jpg) center top / cover; margin-bottom: 32px; }
+.deen .eyebrow a { text-decoration: none; letter-spacing: 0; font-size: 1.15rem; text-transform: none; }
+.deen .post-item { border-color: #ecd9c6; }
+.deen .post-item img { border: 3px solid var(--deen-cream); outline: 1px solid #ecd9c6; }
+.deen .post-list:empty::before { content: "First article soon, inshallah."; display: block; padding: 40px 16px; text-align: center; color: #9a968c; background: #f4f2ec; border-radius: 12px; }
+.deen article h1 { color: var(--deen-green); }

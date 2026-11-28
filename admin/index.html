@@ -6,6 +6,7 @@
 <meta name="robots" content="noindex, nofollow">
 <title>Publier – Admin</title>
 <link rel="stylesheet" href="/assets/style.css">
+<link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
 <style>
   body { background: var(--bg); }
   .admin { max-width: 560px; margin: 0 auto; padding: 24px 18px 80px; }
@@ -37,6 +38,18 @@
   .link { background: none; border: 0; color: var(--muted); text-decoration: underline; font: inherit; cursor: pointer; padding: 0; }
   .small { font-size: .9rem; color: var(--muted); }
   .hidden { display: none !important; }
+  .tabs { display: flex; gap: 6px; background: #efece4; padding: 5px; border-radius: 999px; margin: 0 0 18px; }
+  .tabs button { flex: 1; border: 0; background: none; font: inherit; font-weight: 600; padding: 10px; border-radius: 999px; cursor: pointer; color: var(--muted); }
+  .tabs button.on { background: #fff; color: var(--ink); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+  .admin textarea#aBody { min-height: 320px; line-height: 1.55; }
+  .help { font-size: .88rem; color: var(--muted); background: #f6f4ee; border-radius: 10px; padding: 10px 12px; margin: -4px 0 14px; }
+  .help code { background: #fff; border: 1px solid var(--line); border-radius: 5px; padding: 0 4px; }
+  .cover { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
+  .cover img { width: 92px; height: 92px; object-fit: cover; border-radius: 10px; background: #ece9e1; }
+  .preview { border-top: 1px solid var(--line); margin-top: 6px; padding-top: 6px; }
+  .preview h1 { font-size: 1.6rem; }
+  .preview blockquote { margin: 1em 0; padding: 10px 16px; border-left: 4px solid var(--green); background: #f4f2ec; }
+  [lang=ar] { font-family: "Amiri", "Noto Naskh Arabic", serif; }
 </style>
 </head>
 <body>
@@ -76,8 +89,13 @@
   <!-- Publishing -->
   <section id="publish" class="hidden">
     <h1>Publier</h1>
-    <p class="sub">Choisis la catégorie, ajoute tes images, publie.</p>
+    <div class="tabs" role="tablist">
+      <button type="button" id="tabImages" class="on">Images</button>
+      <button type="button" id="tabArticle">Article</button>
+    </div>
     <div id="pubMsg"></div>
+    <div id="modeImages">
+    <p class="sub">Choisis la catégorie, ajoute tes images, publie.</p>
     <div class="box">
       <label>Catégorie</label>
       <div class="cats" id="cats"></div>
@@ -88,6 +106,45 @@
       <div id="list"></div>
     </div>
     <button class="btn" id="pubBtn" disabled>Publier</button>
+    </div>
+
+    <!-- Articles: Blog or و الحمد لله -->
+    <div id="modeArticle" class="hidden">
+    <p class="sub">Écris ton article, choisis où il va, publie.</p>
+    <div class="box">
+      <label>Où ?</label>
+      <div class="cats" id="secs">
+        <label><input type="radio" name="sec" value="blog" checked><span>Blog</span></label>
+        <label><input type="radio" name="sec" value="deen"><span lang="ar">و الحمد لله</span></label>
+      </div>
+    </div>
+    <div class="box">
+      <label for="aTitle">Titre</label>
+      <input type="text" id="aTitle" dir="auto">
+      <label for="aExcerpt">Résumé <span class="small">(facultatif, affiché dans la liste)</span></label>
+      <textarea id="aExcerpt" dir="auto"></textarea>
+      <label>Image de couverture <span class="small">(facultatif)</span></label>
+      <div class="cover">
+        <img id="aCoverImg" alt="">
+        <div>
+          <label class="link" style="display:inline;font-weight:400">Choisir une image<input type="file" id="aCover" accept="image/*" class="hidden"></label>
+          <br><button type="button" class="link hidden" id="aCoverRm">Retirer</button>
+          <p class="small" id="aCoverNote" style="margin:4px 0 0"></p>
+        </div>
+      </div>
+      <label for="aBody">Texte</label>
+      <div class="help">
+        Ligne vide = nouveau paragraphe.<br>
+        <code>## </code> titre de partie · <code>&gt; </code> citation, verset, hadith · <code>- </code> liste<br>
+        <code>**gras**</code> · <code>*italique*</code> · <code>[texte](https://lien)</code><br>
+        L’arabe s’affiche de droite à gauche tout seul.
+      </div>
+      <textarea id="aBody" dir="auto"></textarea>
+      <button type="button" class="link" id="aPrevBtn">Voir l’aperçu</button>
+      <div id="aPreview" class="preview hidden"></div>
+    </div>
+    <button class="btn" id="artBtn">Publier l’article</button>
+    </div>
     <p class="small" style="margin-top:14px">Le site se met à jour en 1 à 2 minutes après la publication.</p>
     <p><button class="link" id="logoutBtn">Se déconnecter</button></p>
   </section>
@@ -312,6 +369,192 @@
     return chain.then(function () { return attempt(2); });
   }
 
+
+  // ---------- articles (same markup as build/build.py) ----------
+  var SECS = {
+    blog: { path: 'blog', name: 'Blog', fallback: '' },
+    deen: { path: 'alhamdulillah', name: 'و الحمد لله', fallback: '/uploads/deen/frame.jpg' }
+  };
+  var MONTHS = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  function isoToday() { var d = new Date(); return d.getFullYear() + '-' + pad(d.getMonth() + 1) + '-' + pad(d.getDate()); }
+  function fdate(iso) { var p = iso.split('-'); return MONTHS[+p[1] - 1] + ' ' + (+p[2]) + ', ' + p[0]; }
+  function postThumb(p) {
+    var src = p.image || SECS[p.section || 'blog'].fallback;
+    if (!src) return '';
+    return src.indexOf('/uploads/') === 0 ? thumbOf(src) : src + '?w=400&h=400&crop=1';
+  }
+  function listItem(p) {
+    var url = '/' + SECS[p.section || 'blog'].path + '/' + p.slug + '/';
+    var t = postThumb(p);
+    var imgtag = t ? '<a href="' + url + '"><img src="' + esc(t) + '" alt="" loading="lazy"></a>' : '';
+    var exc = p.excerpt ? '<p dir="auto">' + esc(p.excerpt) + '</p>' : '';
+    return '<div class="post-item' + (t ? '' : ' noimg') + '">' + imgtag + '<div>' +
+      '<h2 dir="auto"><a href="' + url + '">' + esc(p.title) + '</a></h2>' +
+      '<span class="date">' + fdate(p.date) + '</span>' + exc + '</div></div>';
+  }
+
+  // small text format -> HTML
+  function inline(t) {
+    return t
+      .replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+      .replace(/(^|[^*])\*([^*\s][^*]*?)\*/g, '$1<em>$2</em>')
+      .replace(/\[([^\]]+)\]\(((?:https?:\/\/|\/)[^\s)]+)\)/g, function (m, txt, url) {
+        var ext = url.charAt(0) !== '/';
+        return '<a href="' + url + '"' + (ext ? ' target="_blank" rel="noopener"' : '') + '>' + txt + '</a>';
+      });
+  }
+  function toHtml(src) {
+    var blocks = esc(src.replace(/\r/g, '')).split(/\n\s*\n/);
+    return blocks.map(function (b) {
+      b = b.replace(/^\n+|\s+$/g, '');
+      if (!b) return '';
+      var lines = b.split('\n');
+      var m = /^(#{2,3})\s+(.*)$/.exec(b);
+      if (m && lines.length === 1) { var h = m[1].length; return '<h' + h + ' dir="auto">' + inline(m[2]) + '</h' + h + '>'; }
+      if (lines.every(function (l) { return /^\s*[-•]\s+/.test(l); })) {
+        return '<ul>' + lines.map(function (l) { return '<li dir="auto">' + inline(l.replace(/^\s*[-•]\s+/, '')) + '</li>'; }).join('') + '</ul>';
+      }
+      if (lines.every(function (l) { return /^&gt;\s?/.test(l); })) {
+        return '<blockquote dir="auto"><p dir="auto">' + lines.map(function (l) { return inline(l.replace(/^&gt;\s?/, '')); }).join('<br>') + '</p></blockquote>';
+      }
+      return '<p dir="auto">' + lines.map(inline).join('<br>') + '</p>';
+    }).filter(Boolean).join('\n');
+  }
+
+  var cover = null;   // {file, preview}
+
+  function prepareCover(file) {
+    return loadBitmap(file).then(function (bm) {
+      var W = bm.width, H = bm.height, s = Math.min(1, 1600 / Math.max(W, H)), side = Math.min(W, H);
+      var w = Math.round(W * s), h = Math.round(H * s);
+      return Promise.all([
+        toJpeg(bm, w, h, 0, 0, W, H, 0.85),
+        toJpeg(bm, 480, 480, (W - side) / 2, (H - side) / 2, side, side, 0.8)
+      ]).then(function (bl) { return Promise.all([blobB64(bl[0]), blobB64(bl[1])]); })
+        .then(function (b) { return { big: b[0], thumb: b[1], w: w, h: h }; });
+    });
+  }
+
+  function publishArticle(a, status) {
+    var now = new Date();
+    var stamp = '' + now.getFullYear() + pad(now.getMonth() + 1) + pad(now.getDate()) + '-' + pad(now.getHours()) + pad(now.getMinutes());
+    var base = slugify(a.title) || 'article-' + stamp;
+    var files = [], imgPath = '', body = toHtml(a.text);
+    var prep = Promise.resolve();
+    if (a.cover) {
+      prep = (status('Préparation de l’image…'), prepareCover(a.cover.file)).then(function (c) {
+        var f = 'uploads/' + now.getFullYear() + '/' + pad(now.getMonth() + 1) + '/article-' + stamp + '-' + base.slice(0, 30);
+        files.push({ path: f + '.jpg', b64: c.big }, { path: f + '-thumb.jpg', b64: c.thumb });
+        imgPath = '/' + f + '.jpg';
+        body = '<figure class="post-img"><img src="' + imgPath + '" alt="' + esc(a.title) + '" width="' + c.w + '" height="' + c.h + '"></figure>\n' + body;
+      });
+    }
+
+    function attempt(tries) {
+      var head, baseTree;
+      status('Envoi vers le site…');
+      return gh('/git/ref/heads/' + BRANCH).then(function (ref) {
+        head = ref.object.sha;
+        return gh('/git/commits/' + head);
+      }).then(function (c) {
+        baseTree = c.tree.sha;
+        var sec = SECS[a.section];
+        return Promise.all([readText('build/data/posts.json', head), readText('build/data/shell.json', head), readText(sec.path + '/index.html', head)]);
+      }).then(function (t) {
+        var posts = JSON.parse(t[0]), shell = JSON.parse(t[1])[a.section], listPage = t[2];
+        var sec = SECS[a.section];
+        // a slug already taken (in either section) gets -2, -3…
+        var slug = base, n = 2, taken = posts.map(function (p) { return p.slug; });
+        while (taken.indexOf(slug) >= 0) slug = base + '-' + n++;
+        var post = { slug: slug, title: a.title, date: isoToday(), image: imgPath, excerpt: a.excerpt, section: a.section };
+        posts.unshift(post);
+
+        var pageHtml = shell.split('@@TITLE@@').join(esc(a.title)).split('@@DESC@@').join(esc(a.excerpt || a.title))
+          .split('@@DATE@@').join(fdate(post.date)).split('@@BODY@@').join(body);
+        var newList = listPage.replace('<div class="post-list">', '<div class="post-list">' + listItem(post));
+        if (newList === listPage) throw new Error('Page ' + sec.name + ' non reconnue');
+
+        var blobs = files.map(function (f) {
+          return gh('/git/blobs', { method: 'POST', body: { content: f.b64, encoding: 'base64' } })
+            .then(function (b) { return { path: f.path, mode: '100644', type: 'blob', sha: b.sha }; });
+        });
+        var mk = function (path, content) { return Promise.resolve({ path: path, mode: '100644', type: 'blob', content: content }); };
+        return Promise.all(blobs.concat([
+          mk('build/data/posts.json', JSON.stringify(posts, null, 1) + '\n'),
+          mk('build/data/posts/' + slug + '.html', body + '\n'),
+          mk('build/data/posts/' + slug + '.md', a.text + '\n'),
+          mk(sec.path + '/' + slug + '/index.html', pageHtml),
+          mk(sec.path + '/index.html', newList)
+        ])).then(function (entries) { a.slug = slug; return entries; });
+      }).then(function (entries) {
+        return gh('/git/trees', { method: 'POST', body: { base_tree: baseTree, tree: entries } });
+      }).then(function (t) {
+        return gh('/git/commits', { method: 'POST', body: { message: 'Admin: article (' + SECS[a.section].name + ') – ' + a.title, tree: t.sha, parents: [head] } });
+      }).then(function (c) {
+        return gh('/git/refs/heads/' + BRANCH, { method: 'PATCH', body: { sha: c.sha, force: false } });
+      }).catch(function (e) {
+        if (e.status === 422 && tries > 0) return attempt(tries - 1);
+        throw e;
+      });
+    }
+    return prep.then(function () { return attempt(2); });
+  }
+
+  function curSec() { return document.querySelector('input[name=sec]:checked').value; }
+  function coverNote() {
+    var deen = curSec() === 'deen';
+    $('aCoverImg').src = cover ? cover.preview : (deen ? SECS.deen.fallback.replace('.jpg', '-thumb.jpg') : '');
+    $('aCoverImg').style.visibility = (cover || deen) ? 'visible' : 'hidden';
+    $('aCoverRm').classList.toggle('hidden', !cover);
+    $('aCoverNote').textContent = cover ? '' : deen ? 'Sans image, la frise de la page sert de miniature.' : 'Sans image, l’article apparaît sans miniature.';
+  }
+  function setMode(m) {
+    $('tabImages').classList.toggle('on', m === 'images');
+    $('tabArticle').classList.toggle('on', m === 'article');
+    $('modeImages').classList.toggle('hidden', m !== 'images');
+    $('modeArticle').classList.toggle('hidden', m !== 'article');
+    msg('pubMsg');
+    try { localStorage.setItem('kbk-admin-mode', m); } catch (e) {}
+  }
+  $('tabImages').addEventListener('click', function () { setMode('images'); });
+  $('tabArticle').addEventListener('click', function () { setMode('article'); });
+  Array.prototype.forEach.call(document.querySelectorAll('input[name=sec]'), function (r) { r.addEventListener('change', coverNote); });
+  $('aCover').addEventListener('change', function (e) {
+    var f = e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (cover) URL.revokeObjectURL(cover.preview);
+    cover = { file: f, preview: URL.createObjectURL(f) }; coverNote();
+  });
+  $('aCoverRm').addEventListener('click', function () { if (cover) URL.revokeObjectURL(cover.preview); cover = null; coverNote(); });
+  $('aPrevBtn').addEventListener('click', function () {
+    var box = $('aPreview'), open = box.classList.toggle('hidden') === false;
+    $('aPrevBtn').textContent = open ? 'Masquer l’aperçu' : 'Voir l’aperçu';
+    if (open) box.innerHTML = '<h1 dir="auto">' + esc($('aTitle').value) + '</h1>' + toHtml($('aBody').value);
+  });
+  // keep the draft on the phone in case the page is closed
+  ['aTitle', 'aExcerpt', 'aBody'].forEach(function (id) {
+    try { var v = localStorage.getItem('kbk-draft-' + id); if (v) $(id).value = v; } catch (e) {}
+    $(id).addEventListener('input', function () { try { localStorage.setItem('kbk-draft-' + id, $(id).value); } catch (e) {} });
+  });
+  $('artBtn').addEventListener('click', function () {
+    var a = { section: curSec(), title: $('aTitle').value.trim(), excerpt: $('aExcerpt').value.trim().replace(/\s+/g, ' '), text: $('aBody').value.trim(), cover: cover };
+    if (!a.title) return msg('pubMsg', 'err', 'Il manque le titre.');
+    if (!a.text) return msg('pubMsg', 'err', 'Il manque le texte.');
+    var btn = $('artBtn'); btn.disabled = true;
+    publishArticle(a, function (t) { msg('pubMsg', 'info', t); }).then(function () {
+      ['aTitle', 'aExcerpt', 'aBody'].forEach(function (id) { $(id).value = ''; try { localStorage.removeItem('kbk-draft-' + id); } catch (e) {} });
+      if (cover) URL.revokeObjectURL(cover.preview); cover = null; coverNote();
+      $('aPreview').classList.add('hidden'); $('aPrevBtn').textContent = 'Voir l’aperçu';
+      btn.disabled = false;
+      var url = '/' + SECS[a.section].path + '/' + a.slug + '/';
+      msg('pubMsg', 'ok', 'Article publié dans ' + SECS[a.section].name + '. En ligne d’ici 1 à 2 minutes : ' + location.origin + url);
+    }).catch(function (e) {
+      btn.disabled = false;
+      msg('pubMsg', 'err', e.status === 401 ? 'La clé GitHub n’est plus valide (expirée ?). Déconnecte-toi et recommence avec une nouvelle clé.'
+        : 'La publication a échoué, rien n’a été modifié. Ton texte est gardé, réessaie. (' + e.message + ')');
+    });
+  });
+
   // ---------- UI ----------
   function renderCats() {
     $('cats').innerHTML = CATS.map(function (c, i) {
@@ -393,7 +636,11 @@
   $('resetBtn').addEventListener('click', function () { forget(); token = null; show('setup'); });
   $('logoutBtn').addEventListener('click', function () { token = null; show(store() ? 'login' : 'setup'); });
 
-  function enter() { renderCats(); renderList(); show('publish'); }
+  function enter() {
+    renderCats(); renderList(); coverNote();
+    var m = 'images'; try { m = localStorage.getItem('kbk-admin-mode') || 'images'; } catch (e) {}
+    setMode(m); show('publish');
+  }
 
   if (!window.crypto || !crypto.subtle) {
     document.querySelector('.admin').insertAdjacentHTML('beforeend', '<p class="msg err">Ouvre cette page avec l’adresse en https.</p>');
