@@ -37,7 +37,6 @@ THEMES = [
 ]
 
 # Collections inside Arts: slug, name, CSS class of the empty cover.
-# A piece in a collection is also listed in "All pieces" on the Arts page.
 ARTS_COLLECTIONS = [
     ("palestine", "Palestine 🇵🇸", "flag-ps"),
     ("orient", "Orient &amp; miniatures", ""),
@@ -286,18 +285,16 @@ def main():
         for s, n, cls in ARTS_COLLECTIONS
     )
     arts = g["arts"]["items"]
-    hero, pieces = arts[0], arts[1:]
+    hero = arts[0]  # the rest of g["arts"] is the old flat list, kept as an archive
     page("arts", "Arts", f"""<div class="wrap">
 <section class="hero">
 <a class="lightbox" href="{e(big(hero['src']))}" data-caption="{e(hero['title'])}"><img src="{e(hero['src'])}?w=600" alt="{e(hero['alt'])}" width="240" height="240"></a>
 <div>
-<p class="eyebrow">Arts · {len(pieces)} pieces</p>
-<p class="lead">AI-generated pieces from Karim's ideas, newest first. Tap any image to open it full screen, then swipe or use the arrows to browse.</p>
+<p class="eyebrow">Arts · {len(ARTS_COLLECTIONS)} collections</p>
+<p class="lead">AI-generated pieces from Karim's ideas, sorted into collections. Pick one to browse.</p>
 </div>
 </section>
 <div class="collections"><p class="eyebrow">Collections</p><div class="themes">{collections}</div></div>
-<p class="eyebrow">All pieces</p>
-{grid(pieces)}
 </div>""", "arts", "AI-generated art from ideas by Karim Ben Khalifa.")
 
     for s, n, cls in ARTS_COLLECTIONS:

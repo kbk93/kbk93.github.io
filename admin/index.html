@@ -168,9 +168,7 @@
     { slug: 'work', name: 'Work' },
     { slug: 'huh', name: 'Huh!' },
     { slug: 'junk', name: 'Junk' },
-    { slug: 'arts', name: 'Arts (sans collection)' },
     // collections inside Arts (same list as ARTS_COLLECTIONS in build/build.py);
-    // a piece added to one also goes into "All pieces" on the Arts page
     { slug: 'palestine', name: 'Arts · Palestine 🇵🇸', label: 'Palestine 🇵🇸', arts: true },
     { slug: 'orient', name: 'Arts · Orient & miniatures', label: 'Orient & miniatures', arts: true },
     { slug: 'patterns', name: 'Arts · Patterns & tiles', label: 'Patterns & tiles', arts: true },
@@ -346,7 +344,7 @@
           var pieces = gal.items.length - 1;
           page = page.replace(/<p class="eyebrow">Arts · \d+ pieces<\/p>/, '<p class="eyebrow">Arts · ' + pieces + ' pieces</p>');
         } else if (cat.arts) {
-          // a collection inside Arts: its own page, plus its card and "All pieces" on the Arts page
+          // a collection inside Arts: its own page, plus its card on the Arts page
           var k = gal.items.length, lbl = esc(cat.label).replace(/&#x27;/g, "'");
           var lblRe = lbl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
           page = page.replace(new RegExp('(<p class="eyebrow"><a href="/arts/">Arts</a> · ' + lblRe + ')[^<]*</p>'),
@@ -356,10 +354,6 @@
           // the card shows the newest piece
           hub = hub.replace(new RegExp('(<a class="theme" href="/arts/' + cat.slug + '/">)(<span class="cover-empty[^"]*">[^<]*</span>|<img [^>]*>)'),
             '$1<img src="' + thumbOf(newItems[0].src) + '" alt="' + lbl + '" loading="lazy">');
-          Array.prototype.splice.apply(g.arts.items, [1, 0].concat(newItems));
-          json = JSON.stringify(g, null, 1);
-          hub = hub.replace('<div class="grid">', '<div class="grid">' + cells)
-            .replace(/<p class="eyebrow">Arts · \d+ pieces<\/p>/, '<p class="eyebrow">Arts · ' + (g.arts.items.length - 1) + ' pieces</p>');
         } else {
           var n = gal.items.length;
           var count = n > 1 ? ' · ' + n + ' drawings' : '';

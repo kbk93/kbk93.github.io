@@ -17,9 +17,9 @@ de passe.
 Arts est rangé en collections (Palestine 🇵🇸, Orient & miniatures, Patterns & tiles,
 Mediterranean, Cubism, Dada & pop, Retro posters, Classics revisited, Abstract,
 Sketches), chacune avec sa page `/arts/<slug>/`, listées dans `ARTS_COLLECTIONS` de
-`build/build.py`. Chaque image d'une collection figure aussi dans « All pieces » sur
-la page Arts. Dans `/admin/`, choisir une collection ajoute l'image dans sa page,
-dans « All pieces », et met à jour sa carte sur la page Arts.
+`build/build.py`. La page Arts ne montre que les cartes des collections. Dans
+`/admin/`, choisir une collection ajoute l'image dans sa page et met à jour sa
+carte sur la page Arts.
 
 ## Articles (Blog et و الحمد لله)
 
