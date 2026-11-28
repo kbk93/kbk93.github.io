@@ -14,9 +14,12 @@ Elle s'ouvre avec une clé GitHub (fine-grained, accès « Contents : Read and
 write » sur ce dépôt uniquement), gardée chiffrée sur le téléphone avec un mot
 de passe.
 
-Arts a aussi des collections (pour l'instant : Palestine 🇵🇸, page `/arts/palestine/`),
-listées dans `ARTS_COLLECTIONS` de `build/build.py`. Dans `/admin/`, choisir
-« Palestine 🇵🇸 » ajoute l'image dans sa page et met à jour sa carte sur la page Arts.
+Arts est rangé en collections (Palestine 🇵🇸, Orient & miniatures, Patterns & tiles,
+Mediterranean, Cubism, Dada & pop, Retro posters, Classics revisited, Abstract,
+Sketches), chacune avec sa page `/arts/<slug>/`, listées dans `ARTS_COLLECTIONS` de
+`build/build.py`. Chaque image d'une collection figure aussi dans « All pieces » sur
+la page Arts. Dans `/admin/`, choisir une collection ajoute l'image dans sa page,
+dans « All pieces », et met à jour sa carte sur la page Arts.
 
 ## Articles (Blog et و الحمد لله)
 

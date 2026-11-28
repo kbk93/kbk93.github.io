@@ -76,16 +76,3 @@
     startX = null;
   });
 })();
-
-// Sorting mode (private, temporary): add ?tri to a gallery address to see a
-// small numbered grid, handy for screenshots when sorting images by category.
-(function () {
-  if (!/[?&]tri\b/.test(location.search)) return;
-  var grid = document.querySelector('.grid');
-  if (!grid) return;
-  document.body.classList.add('tri');
-  Array.prototype.forEach.call(grid.querySelectorAll('a'), function (a, i) {
-    var n = document.createElement('b'); n.textContent = i + 1; a.appendChild(n);
-    a.addEventListener('click', function (ev) { ev.preventDefault(); ev.stopImmediatePropagation(); }, true);
-  });
-})();
