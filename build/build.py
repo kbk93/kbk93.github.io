@@ -8,10 +8,12 @@ or add entries at the TOP of the matching list in build/data/galleries.json
 (newest first; for "arts" just after the first item, which is the hero image),
 then rebuild.
 """
-import json, os, html, datetime
+import json, os, html, datetime, hashlib
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA = os.path.join(ROOT, "build", "data")
+# Version tag on the stylesheet link: when style.css changes, phones load the new one
+CSS_V = hashlib.md5(open(os.path.join(ROOT, "assets", "style.css"), "rb").read()).hexdigest()[:8]
 WP = "https://benkhalifas.wordpress.com/wp-content/uploads/2026/11/"
 
 SITE = "Ben Khalifa's"
@@ -108,7 +110,7 @@ def render(title, body, active="", description=""):
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Inter:wght@400;500;600&family=Labrada:wght@500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="/assets/style.css">
+<link rel="stylesheet" href="/assets/style.css?v={CSS_V}">
 </head>
 <body>
 <header class="site-header">
