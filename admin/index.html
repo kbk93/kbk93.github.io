@@ -168,7 +168,8 @@
     { slug: 'work', name: 'Work' },
     { slug: 'huh', name: 'Huh!' },
     { slug: 'junk', name: 'Junk' },
-    { slug: 'arts', name: 'Arts' }
+    { slug: 'arts', name: 'Arts' },
+    { slug: 'palestine', name: 'Palestine 🇵🇸', arts: true }   // collection inside Arts
   ];
 
   var token = null;
@@ -297,7 +298,7 @@
           var base = folder + cat.slug + '-' + stamp + '-' + (i + 1) + (slugify(it.title) ? '-' + slugify(it.title) : '');
           files.push({ path: base + '.jpg', b64: b[0] }, { path: base + '-thumb.jpg', b64: b[1] });
           var title = it.title.trim(), caption = it.caption.trim();
-          var who = cat.slug === 'arts' ? 'AI-generated artwork, idea by ' + AUTHOR : 'AI-generated caricature, idea by ' + AUTHOR;
+          var who = (cat.slug === 'arts' || cat.arts) ? 'AI-generated artwork, idea by ' + AUTHOR : 'AI-generated caricature, idea by ' + AUTHOR;
           newItems.push({ src: '/' + base + '.jpg', alt: title ? who + ': ' + title : who, title: title, caption: caption });
         });
       });
@@ -311,12 +312,15 @@
         return gh('/git/commits/' + head);
       }).then(function (c) {
         baseTree = c.tree.sha;
-        var pagePath = cat.slug === 'arts' ? 'arts/index.html' : 'caricatures/' + cat.slug + '/index.html';
+        var pagePath = cat.slug === 'arts' ? 'arts/index.html'
+          : cat.arts ? 'arts/' + cat.slug + '/index.html' : 'caricatures/' + cat.slug + '/index.html';
+        var hubPath = cat.slug === 'arts' ? null : cat.arts ? 'arts/index.html' : 'caricatures/index.html';
         return Promise.all([readText('build/data/galleries.json', head), readText(pagePath, head),
-          cat.slug === 'arts' ? Promise.resolve(null) : readText('caricatures/index.html', head)
-        ]).then(function (t) { return { json: t[0], page: t[1], hub: t[2], pagePath: pagePath }; });
+          hubPath ? readText(hubPath, head) : Promise.resolve(null)
+        ]).then(function (t) { return { json: t[0], page: t[1], hub: t[2], pagePath: pagePath, hubPath: hubPath }; });
       }).then(function (d) {
         var g = JSON.parse(d.json);
+        if (cat.arts && !g[cat.slug]) g[cat.slug] = { intro: [], items: [] };
         var gal = g[cat.slug];
         if (!gal) throw new Error('Catégorie introuvable dans galleries.json');
         // newest first; in Arts the first item is the hero image, so new pieces go just after it
@@ -330,6 +334,16 @@
         if (cat.slug === 'arts') {
           var pieces = gal.items.length - 1;
           page = page.replace(/<p class="eyebrow">Arts · \d+ pieces<\/p>/, '<p class="eyebrow">Arts · ' + pieces + ' pieces</p>');
+        } else if (cat.arts) {
+          // a collection inside Arts: its own page, plus its card on the Arts page
+          var k = gal.items.length;
+          page = page.replace(new RegExp('(<p class="eyebrow"><a href="/arts/">Arts</a> · ' + cat.name + ')[^<]*</p>'),
+            '$1' + (k > 1 ? ' · ' + k + ' pieces' : '') + '</p>');
+          hub = hub.replace(new RegExp('<h3>' + cat.name + '</h3><small>[^<]*</small>'),
+            '<h3>' + cat.name + '</h3><small>' + k + ' piece' + (k > 1 ? 's' : '') + '</small>');
+          // the card shows the newest piece
+          hub = hub.replace(new RegExp('(<a class="theme" href="/arts/' + cat.slug + '/">)(<span class="cover-empty[^"]*">[^<]*</span>|<img [^>]*>)'),
+            '$1<img src="' + thumbOf(newItems[0].src) + '" alt="' + esc(cat.name) + '" loading="lazy">');
         } else {
           var n = gal.items.length;
           var count = n > 1 ? ' · ' + n + ' drawings' : '';
@@ -351,7 +365,7 @@
           Promise.resolve({ path: 'build/data/galleries.json', mode: '100644', type: 'blob', content: json }),
           Promise.resolve({ path: d.pagePath, mode: '100644', type: 'blob', content: page })
         ]);
-        if (hub) tree.push(Promise.resolve({ path: 'caricatures/index.html', mode: '100644', type: 'blob', content: hub }));
+        if (hub) tree.push(Promise.resolve({ path: d.hubPath, mode: '100644', type: 'blob', content: hub }));
         return Promise.all(tree);
       }).then(function (entries) {
         return gh('/git/trees', { method: 'POST', body: { base_tree: baseTree, tree: entries } });

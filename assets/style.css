@@ -224,3 +224,20 @@ article blockquote p { margin: 0; }
 .deen .post-item img { border: 3px solid var(--deen-cream); outline: 1px solid #ecd9c6; }
 .deen .post-list:empty::before { content: "First article soon, inshallah."; display: block; padding: 40px 16px; text-align: center; color: #9a968c; background: #f4f2ec; border-radius: 12px; }
 .deen article h1 { color: var(--deen-green); }
+
+/* Arts collections (Palestine…) */
+.collections { margin-bottom: 48px; }
+.collections .themes { margin-top: 12px; }
+.band ~ .eyebrow a { color: inherit; text-decoration: none; }
+.band ~ .eyebrow a:hover { text-decoration: underline; }
+.flag-ps, .theme .cover-empty.flag-ps {
+  --ps-red: #ce1126; --ps-green: #007a3d;
+  background:
+    linear-gradient(to top right, var(--ps-red) 50%, transparent 50.5%) left top / 36% 50.2% no-repeat,
+    linear-gradient(to bottom right, var(--ps-red) 50%, transparent 50.5%) left bottom / 36% 50.2% no-repeat,
+    linear-gradient(#111 33.34%, #fff 33.34% 66.67%, var(--ps-green) 66.67%);
+  border: 1px solid var(--line);
+}
+.theme .cover-empty.flag-ps { font-size: 0; }
+.band { height: 56px; border-radius: 12px; margin-bottom: 32px; }
+.band.flag-ps ~ .grid:empty::before { content: "First pieces coming soon, inshallah."; }

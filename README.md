@@ -14,6 +14,10 @@ Elle s'ouvre avec une clé GitHub (fine-grained, accès « Contents : Read and
 write » sur ce dépôt uniquement), gardée chiffrée sur le téléphone avec un mot
 de passe.
 
+Arts a aussi des collections (pour l'instant : Palestine 🇵🇸, page `/arts/palestine/`),
+listées dans `ARTS_COLLECTIONS` de `build/build.py`. Dans `/admin/`, choisir
+« Palestine 🇵🇸 » ajoute l'image dans sa page et met à jour sa carte sur la page Arts.
+
 ## Articles (Blog et و الحمد لله)
 
 Dans `/admin/`, l'onglet « Article » publie un article dans le Blog ou dans la
