@@ -254,7 +254,7 @@ def main():
 <img src="{WP}kbk-hero.jpg?w=600" alt="Ben Khalifa's logo: purple and pale yellow shapes inside a speech bubble on a mustard background" width="240" height="240">
 <div>
 <p class="eyebrow">Arts · Caricatures · Writing · Websites</p>
-<h1>Two brothers'</h1>
+<h1>Two bros</h1>
 <p class="lead">We're Karim and Mehdi Ben Khalifa. This site holds Karim's arts, caricatures and blog, and the websites Mehdi builds.</p>
 </div>
 </section>
