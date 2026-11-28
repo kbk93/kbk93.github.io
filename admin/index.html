@@ -237,7 +237,7 @@
   }
   function thumbOf(src) { return src.replace(/\.[^.]+$/, '') + '-thumb.jpg'; }
   function cell(it) {
-    var alt = it.alt || it.title || 'Drawing by Karim Ben Khalifa';
+    var alt = it.alt || it.title || 'AI-generated image, idea by Karim Ben Khalifa';
     return '<a href="' + esc(it.src) + '" data-caption="' + esc(it.caption || '') + '">' +
       '<img src="' + esc(thumbOf(it.src)) + '" alt="' + esc(alt) + '" loading="lazy" width="240" height="240"></a>';
   }
@@ -297,7 +297,7 @@
           var base = folder + cat.slug + '-' + stamp + '-' + (i + 1) + (slugify(it.title) ? '-' + slugify(it.title) : '');
           files.push({ path: base + '.jpg', b64: b[0] }, { path: base + '-thumb.jpg', b64: b[1] });
           var title = it.title.trim(), caption = it.caption.trim();
-          var who = cat.slug === 'arts' ? 'Artwork by ' + AUTHOR : 'Caricature by ' + AUTHOR;
+          var who = cat.slug === 'arts' ? 'AI-generated artwork, idea by ' + AUTHOR : 'AI-generated caricature, idea by ' + AUTHOR;
           newItems.push({ src: '/' + base + '.jpg', alt: title ? who + ': ' + title : who, title: title, caption: caption });
         });
       });
