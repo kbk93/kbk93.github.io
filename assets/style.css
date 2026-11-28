@@ -244,3 +244,6 @@ article blockquote p { margin: 0; }
 .band { height: 56px; border-radius: 12px; margin-bottom: 32px; }
 .band.flag-ps ~ .grid:empty::before { content: "First pieces coming soon, inshallah."; }
 
+article .src { font-size: .88rem; color: #6f6b62; margin-top: -.6em; line-height: 1.7; }
+article .src a { color: inherit; }
+article ol.sources li { margin-bottom: .7em; word-break: break-word; }
