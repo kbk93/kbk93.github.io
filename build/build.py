@@ -221,13 +221,13 @@ def main():
 </div>
 </section>
 <div class="cards">
-<div class="card"><h3>Drawings</h3><p>Karim's drawings and caricatures, added as he finishes them.</p>
+<div class="card"><h3><a class="card-title" href="/arts/">Drawings</a></h3><p>Karim's drawings and caricatures, added as he finishes them.</p>
 <div class="btns"><a class="btn" href="/arts/">See the arts</a><a class="btn outline" href="/caricatures/">Caricatures</a></div></div>
-<div class="card"><h3>Blog</h3><p>Karim writes about whatever is on his mind. No single topic.</p>
+<div class="card"><h3><a class="card-title" href="/blog/">Blog</a></h3><p>Karim writes about whatever is on his mind. No single topic.</p>
 <div class="btns"><a class="btn" href="/blog/">Read the blog</a></div></div>
-<div class="card"><h3 lang="ar">{DEEN_NAME}</h3><p>Writing about our deen, as a thank-you to Allah for His mercy.</p>
+<div class="card"><h3 lang="ar"><a class="card-title" href="/alhamdulillah/">{DEEN_NAME}</a></h3><p>Writing about our deen, as a thank-you to Allah for His mercy.</p>
 <div class="btns"><a class="btn" href="/alhamdulillah/">Read</a></div></div>
-<div class="card"><h3>Websites</h3><p>Mehdi builds websites from scratch.</p>
+<div class="card"><h3><a class="card-title" href="/web-design/">Websites</a></h3><p>Mehdi builds websites from scratch.</p>
 <div class="btns"><a class="btn" href="/web-design/">Web design</a></div></div>
 </div>
 </div>""", "home")
