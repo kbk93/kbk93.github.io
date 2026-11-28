@@ -241,3 +241,11 @@ article blockquote p { margin: 0; }
 .theme .cover-empty.flag-ps { font-size: 0; }
 .band { height: 56px; border-radius: 12px; margin-bottom: 32px; }
 .band.flag-ps ~ .grid:empty::before { content: "First pieces coming soon, inshallah."; }
+
+/* Sorting mode (?tri) */
+.tri .site-header, .tri .hero, .tri .collections, .tri .eyebrow, .tri .site-footer { display: none; }
+.tri main { padding: 8px 0; }
+.tri .wrap { padding: 0 4px; max-width: none; }
+.tri .grid { grid-template-columns: repeat(5, 1fr) !important; gap: 3px !important; }
+.tri .grid a { position: relative; border-radius: 4px; }
+.tri .grid b { position: absolute; left: 2px; top: 2px; background: #000; color: #fff; font: 600 11px/1 Inter, sans-serif; padding: 2px 4px; border-radius: 3px; }
