@@ -145,7 +145,7 @@ main { padding: 48px 0 72px; }
 .theme:hover h3 { color: var(--green); }
 .theme .cover-empty { display: flex; align-items: center; justify-content: center; aspect-ratio: 16/9; border-radius: 12px; margin-bottom: 12px; background: #ece9e1; color: #9a968c; font-family: Labrada, serif; font-size: 2rem; }
 .grid:empty { display: block; }
-.grid:empty::before { content: "First drawings coming soon."; display: block; padding: 48px 16px; text-align: center; color: #9a968c; background: #f4f2ec; border-radius: 12px; }
+.grid:empty::before { content: "First images coming soon."; display: block; padding: 48px 16px; text-align: center; color: #9a968c; background: #f4f2ec; border-radius: 12px; }
 .theme small { color: var(--green); }
 
 .more { margin-top: 56px; }

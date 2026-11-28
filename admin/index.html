@@ -356,12 +356,12 @@
             '$1<img src="' + thumbOf(newItems[0].src) + '" alt="' + lbl + '" loading="lazy">');
         } else {
           var n = gal.items.length;
-          var count = n > 1 ? ' · ' + n + ' drawings' : '';
+          var count = n > 1 ? ' · ' + n + ' caricatures' : '';
           page = page.replace(new RegExp('<p class="eyebrow">Caricatures · ' + cat.name + '[^<]*</p>'),
             '<p class="eyebrow">Caricatures · ' + cat.name + count + '</p>');
           hub = hub.replace(new RegExp('<h3>' + cat.name + '</h3><small>[^<]*</small>'),
-            '<h3>' + cat.name + '</h3><small>' + n + ' drawing' + (n > 1 ? 's' : '') + '</small>');
-          // a new theme's first drawing becomes its cover on the Caricatures page
+            '<h3>' + cat.name + '</h3><small>' + n + ' caricature' + (n > 1 ? 's' : '') + '</small>');
+          // a new theme's first caricature becomes its cover on the Caricatures page
           hub = hub.replace('<span class="cover-empty">' + esc(cat.name) + '</span>',
             '<img src="' + thumbOf(newItems[0].src) + '" alt="' + esc(cat.name) + ' caricatures" loading="lazy">');
         }

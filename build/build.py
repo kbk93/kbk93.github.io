@@ -2,7 +2,7 @@
 """Generates the whole static site from build/data/.
 
 Run from the repo root:  python3 build/build.py
-To add drawings: use the private page /admin/ on the live site (it uploads
+To add images: use the private page /admin/ on the live site (it uploads
 the image and updates galleries.json and the gallery pages in one commit),
 or add entries at the TOP of the matching list in build/data/galleries.json
 (newest first; for "arts" just after the first item, which is the hero image),
@@ -28,7 +28,7 @@ THEMES = [
     ("politics", "Politics", WP + "protesting-the-french-exception.jpg"),
     ("funny", "Funny", WP + "funny-caricature-01.jpg"),
     ("misc", "Misc", WP + "bye-bye-chrome.jpg"),
-    # New themes: no cover yet, the hub shows the latest drawing once there is one
+    # New themes: no cover yet, the hub shows the latest caricature once there is one
     ("social", "Social", None),
     ("it", "IT", None),
     ("work", "Work", None),
@@ -125,7 +125,7 @@ def page(path, title, body, active="", description=""):
 
 def render(title, body, active="", description=""):
     full_title = f"{title} – {SITE}" if title else f"{SITE} – {TAGLINE}"
-    desc = description or "Karim Ben Khalifa's drawings, caricatures and blog, and the websites Mehdi Ben Khalifa builds."
+    desc = description or "Karim Ben Khalifa's arts, caricatures and blog, and the websites Mehdi Ben Khalifa builds."
     year = datetime.date.today().year
     doc = f"""<!DOCTYPE html>
 <html lang="en">
@@ -248,14 +248,16 @@ def main():
 <section class="hero">
 <img src="{WP}kbk-hero.jpg?w=600" alt="Ben Khalifa's logo: purple and pale yellow shapes inside a speech bubble on a mustard background" width="240" height="240">
 <div>
-<p class="eyebrow">Drawings · Writing · Websites</p>
+<p class="eyebrow">Arts · Caricatures · Writing · Websites</p>
 <h1>Two brothers, one site</h1>
-<p class="lead">We're Karim and Mehdi Ben Khalifa. This site holds Karim's drawings and blog, and the websites Mehdi builds.</p>
+<p class="lead">We're Karim and Mehdi Ben Khalifa. This site holds Karim's arts, caricatures and blog, and the websites Mehdi builds.</p>
 </div>
 </section>
 <div class="cards">
-<div class="card"><h3><a class="card-title" href="/arts/">Drawings</a></h3><p>Karim's drawings and caricatures, added as he finishes them.</p>
-<div class="btns"><a class="btn" href="/arts/">See the arts</a><a class="btn outline" href="/caricatures/">Caricatures</a></div></div>
+<div class="card"><h3><a class="card-title" href="/arts/">Arts</a></h3><p>AI-generated pieces from Karim's ideas, sorted into collections.</p>
+<div class="btns"><a class="btn" href="/arts/">See the arts</a></div></div>
+<div class="card"><h3><a class="card-title" href="/caricatures/">Caricatures</a></h3><p>Caricatures from Karim's ideas, sorted by theme, newest first.</p>
+<div class="btns"><a class="btn" href="/caricatures/">See the caricatures</a></div></div>
 <div class="card"><h3><a class="card-title" href="/blog/">Blog</a></h3><p>Karim writes about whatever is on his mind. No single topic.</p>
 <div class="btns"><a class="btn" href="/blog/">Read the blog</a></div></div>
 <div class="card"><h3 lang="ar"><a class="card-title" href="/alhamdulillah/">{DEEN_NAME}</a></h3><p>Writing about our deen, as a thank-you to Allah for His mercy.</p>
@@ -318,7 +320,7 @@ def main():
         return f'<img src="{e(thumb(src) if src.startswith("/uploads/") else src + "?w=800")}" alt="{e(n)} caricatures" loading="lazy">'
 
     def howmany(k):
-        return "Coming soon" if k == 0 else f'{k} drawing{"s" if k > 1 else ""}'
+        return "Coming soon" if k == 0 else f'{k} caricature{"s" if k > 1 else ""}'
 
     cards = "".join(
         f'<a class="theme" href="/caricatures/{s}/">{cover(s, n, img)}'
@@ -333,19 +335,19 @@ def main():
 </div>""", "caricatures", "AI-generated caricatures from ideas by Karim Ben Khalifa, sorted by theme.")
 
     intros = {
-        "architecture": "Life as an architect: school, the office, software, clients. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "architecture": "Life as an architect: school, the office, software, clients. Tap any caricature to open it full screen, then swipe or use the arrows.",
         "politics": "Caricatures about politics and current events.",
-        "funny": "The lighter side: everyday absurdities, tech fails and family chaos. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "misc": "Everything else: caricatures that don't fit in one theme. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "social": "People, social media and the way we live together. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "it": "Computers, apps, updates and the rest of our digital troubles. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "work": "Bosses, meetings, deadlines and the office in general. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "huh": "The ones that leave you puzzled. Tap any drawing to open it full screen, then swipe or use the arrows.",
-        "junk": "Quick sketches, odd ideas and leftovers. Tap any drawing to open it full screen, then swipe or use the arrows.",
+        "funny": "The lighter side: everyday absurdities, tech fails and family chaos. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "misc": "Everything else: caricatures that don't fit in one theme. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "social": "People, social media and the way we live together. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "it": "Computers, apps, updates and the rest of our digital troubles. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "work": "Bosses, meetings, deadlines and the office in general. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "huh": "The ones that leave you puzzled. Tap any caricature to open it full screen, then swipe or use the arrows.",
+        "junk": "Quick sketches, odd ideas and leftovers. Tap any caricature to open it full screen, then swipe or use the arrows.",
     }
     for s, n, _ in THEMES:
         items = g[s]["items"]
-        count = f" · {len(items)} drawings" if len(items) > 1 else ""
+        count = f" · {len(items)} caricatures" if len(items) > 1 else ""
         page(f"caricatures/{s}", f"{n} caricatures", f"""<div class="wrap">
 <p class="eyebrow">Caricatures · {n}{count}</p>
 <h1>{n}</h1>
@@ -403,10 +405,10 @@ def main():
 
     # About
     page("about", "About", f"""<div class="wrap narrow">
-<a class="lightbox" href="{WP}about-hero.jpg?w=1600"><img src="{WP}about-hero.jpg?w=1200" alt="Two drawings by Karim Ben Khalifa side by side: a cheerful man jumping with his arms up in green and pink colours, and a pencil sketch of a faceless man waving on lined notebook paper" style="border-radius:16px" width="1024" height="576"></a>
+<a class="lightbox" href="{WP}about-hero.jpg?w=1600"><img src="{WP}about-hero.jpg?w=1200" alt="Two AI-generated images from ideas by Karim Ben Khalifa, side by side: a cheerful man jumping with his arms up in green and pink colours, and a pencil sketch of a faceless man waving on lined notebook paper" style="border-radius:16px" width="1024" height="576"></a>
 <h2>Karim</h2>
 <p>I'm Karim Ben Khalifa, an architect. I worked in Paris until 2023, then opened my own practice, <a href="https://kbkarchitecture.com" target="_blank" rel="noopener">KBK Architecture</a>, in Bizerte, Tunisia.</p>
-<p>This site isn't about architecture, though. It's where I put my caricatures and write about whatever I feel like writing about.</p>
+<p>This site isn't about architecture, though. It's where I put my arts and caricatures and write about whatever I feel like writing about.</p>
 <p>All the images on this site, caricatures and art alike, are generated by AI. The ideas behind them are mine.</p>
 <h2>Mehdi</h2>
 <p>Mehdi Ben Khalifa is my brother, and he's very good at what he does: creating websites. He's the one who built the KBK Architecture site.</p>
@@ -431,8 +433,8 @@ def main():
     page("contact", "Contact", f"""<div class="wrap narrow">
 <h1>Contact</h1>
 <p class="lead">There are two of us, so there are two forms. Pick the one that fits.</p>
-<h2 id="karim">Karim: drawings and blog</h2>
-<p>A question about a drawing, something you read on the blog, or anything else.</p>
+<h2 id="karim">Karim: arts, caricatures and blog</h2>
+<p>A question about an image, something you read on the blog, or anything else.</p>
 {form("karim", "New message for Karim (Ben Khalifa's)")}
 <h2 id="mehdi">Mehdi: websites</h2>
 <p>Need a new website? Tell Mehdi a bit about your project.</p>
