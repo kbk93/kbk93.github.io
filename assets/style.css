@@ -26,10 +26,15 @@ body {
 img { max-width: 100%; height: auto; display: block; }
 a { color: var(--green); }
 a:hover { color: var(--green-dark); }
-h1, h2, h3 { font-family: var(--serif); line-height: 1.15; font-weight: 700; color: var(--ink); overflow-wrap: break-word; hyphens: auto; }
-h1 { font-size: clamp(2.2rem, 6vw, 3.4rem); margin: 0 0 .4em; }
-h2 { font-size: clamp(1.7rem, 4.5vw, 2.3rem); margin: 1.4em 0 .5em; }
-h3 { font-size: clamp(1.6rem, 4vw, 1.9rem); margin: 0 0 .4em; }
+h1, h2, h3 { font-family: var(--serif); line-height: 1.2; font-weight: 600; }
+h1 { font-size: clamp(2rem, 5vw, 3rem); margin: 0 0 .4em; }
+h2 { font-size: clamp(1.5rem, 3.5vw, 2rem); margin: 1.6em 0 .5em; }
+h3 { font-size: 1.3rem; margin: 0 0 .4em; }
+
+/* Titles in a frame */
+h1, h2, h3 { display: table; padding: .2em .55em; border: 2px solid var(--ink); border-radius: 10px; }
+.deen-title { display: block; }
+.deen-title { border: 0; padding: 0; }
 
 /* Clickable titles: same look as a heading, green on hover / tap */
 h1 a, h2 a, h3 a, .card-title { color: inherit; text-decoration: none; }
@@ -100,9 +105,6 @@ main { padding: 48px 0 72px; }
 
 .hero { display: flex; gap: 40px; align-items: center; margin-bottom: 56px; }
 .hero img { width: 240px; border-radius: 16px; flex-shrink: 0; }
-/* Home title: always on one line, sized to the screen width */
-.hero h1 { font-size: clamp(1.4rem, 7vw, 3.4rem); white-space: nowrap; }
-@media (min-width: 701px) { .hero h1 { font-size: clamp(1.8rem, 3.6vw, 3rem); } }
 @media (max-width: 700px) {
   .hero { flex-direction: column; align-items: flex-start; gap: 24px; }
   .hero img { width: 180px; }
@@ -173,7 +175,7 @@ main { padding: 48px 0 72px; }
 .post-item { display: grid; grid-template-columns: 200px 1fr; gap: 24px; align-items: start;
   background: var(--card); border: 1px solid var(--line); border-radius: var(--radius); padding: 20px; }
 .post-item img { border-radius: 10px; aspect-ratio: 1; object-fit: cover; width: 100%; }
-.post-item h2 { margin: 0 0 .3em; font-size: clamp(1.5rem, 4vw, 1.8rem); }
+.post-item h2 { margin: 0 0 .3em; font-size: 1.4rem; }
 .post-item h2 a { color: inherit; text-decoration: none; }
 .post-item p { color: var(--muted); margin: .4em 0 0; }
 .post-item.noimg { grid-template-columns: 1fr; }
