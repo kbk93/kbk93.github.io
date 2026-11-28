@@ -247,3 +247,8 @@ article blockquote p { margin: 0; }
 article .src { font-size: .88rem; color: #6f6b62; margin-top: -.6em; line-height: 1.7; }
 article .src a { color: inherit; }
 article ol.sources li { margin-bottom: .7em; word-break: break-word; }
+
+/* Contact */
+.mail-wrap { margin: 14px 0 6px; }
+.mail-shown { margin: 0 0 8px; font-size: .95rem; color: var(--green); user-select: all; word-break: break-all; }
+.small { font-size: .9rem; opacity: .75; margin-top: 28px; }

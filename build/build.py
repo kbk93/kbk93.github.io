@@ -20,8 +20,13 @@ SITE = "Ben Khalifa's"
 TAGLINE = "Art, writing and web"
 LOGO = WP + "logo-ben-khalifas.jpg"
 
-# E-mail addresses that receive the contact forms (FormSubmit, free).
-CONTACT = {"karim": "", "mehdi": ""}
+# Contact e-mail addresses. They never appear in clear in the pages:
+# each part is reversed and base64-encoded, and site.js rebuilds the
+# address only when a visitor taps the button (bots that read the HTML
+# get nothing usable).
+# Stored already encoded (user, domain): this file is public on GitHub too.
+CONTACT = {"karim": ("bWlyYWs=", "bnQuYWZpbGFoa25lYg=="),
+           "mehdi": ("NjFhZmlsYWhrbmViaWRoZW0=", "bW9jLmxpYW1n")}
 
 THEMES = [
     ("architecture", "Architecture", WP + "hello-weekend.jpg"),
@@ -416,34 +421,20 @@ def main():
 </div>""", "about")
 
     # Contact
-    def form(who, subject):
-        email = CONTACT[who]
-        if not email:
-            return '<p><em>Form coming soon.</em></p>'
-        return f"""<form class="contact" action="https://formsubmit.co/{email}" method="POST">
-<input type="hidden" name="_subject" value="{e(subject)}">
-<input type="hidden" name="_template" value="table">
-<input type="hidden" name="_next" value="/contact/thanks/">
-<input type="text" name="_honey" style="display:none" tabindex="-1" autocomplete="off">
-<label>Name<input type="text" name="name" required></label>
-<label>Email<input type="email" name="email" required></label>
-<label>Message<textarea name="message" required></textarea></label>
-<button class="btn" type="submit">Send</button>
-</form>"""
+    def mail_button(who, label, subject):
+        user, domain = CONTACT[who]
+        return f"""<p class="mail-wrap"><a class="btn mail" href="/contact/#{who}" data-u="{user}" data-d="{domain}" data-s="{e(subject)}">{label}</a></p>
+<p class="mail-shown" hidden></p>"""
     page("contact", "Contact", f"""<div class="wrap narrow">
 <h1>Contact</h1>
-<p class="lead">There are two of us, so there are two forms. Pick the one that fits.</p>
+<p class="lead">There are two of us. Write to the one you need.</p>
 <h2 id="karim">Karim: arts, caricatures and blog</h2>
 <p>A question about an image, something you read on the blog, or anything else.</p>
-{form("karim", "New message for Karim (Ben Khalifa's)")}
+{mail_button("karim", "Email Karim", "Hello Karim (benkhalifa.tn)")}
 <h2 id="mehdi">Mehdi: websites</h2>
 <p>Need a new website? Tell Mehdi a bit about your project.</p>
-{form("mehdi", "New website request for Mehdi (Ben Khalifa's)")}
-</div>""", "contact")
-    page("contact/thanks", "Thanks", """<div class="wrap narrow">
-<h1>Thanks!</h1>
-<p class="lead">Your message is on its way. We'll get back to you soon.</p>
-<div class="btns"><a class="btn" href="/">Back home</a></div>
+{mail_button("mehdi", "Email Mehdi", "Website project (benkhalifa.tn)")}
+<p class="small">Tapping a button opens your mail app with a new message ready to write.</p>
 </div>""", "contact")
 
     # 404

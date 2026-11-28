@@ -76,3 +76,21 @@
     startX = null;
   });
 })();
+
+// Contact buttons: the address is rebuilt only when someone taps,
+// so spam bots reading the page never see it.
+(function () {
+  function dec(t) { return atob(t).split('').reverse().join(''); }
+  document.querySelectorAll('a.mail').forEach(function (a) {
+    a.addEventListener('click', function (e) {
+      e.preventDefault();
+      var addr = dec(a.getAttribute('data-u')) + '@' + dec(a.getAttribute('data-d'));
+      var shown = a.parentNode.nextElementSibling;
+      if (shown && shown.classList.contains('mail-shown')) {
+        shown.textContent = addr;
+        shown.hidden = false;
+      }
+      window.location.href = 'mailto:' + addr + '?subject=' + encodeURIComponent(a.getAttribute('data-s') || '');
+    });
+  });
+})();
